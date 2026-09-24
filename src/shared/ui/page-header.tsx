@@ -1,0 +1,26 @@
+import type { ReactNode } from "react";
+import { Group, Stack, Text, Title } from "@mantine/core";
+
+export function PageHeader({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <Group justify="space-between" align="flex-end" mb="lg" wrap="wrap">
+      <Stack gap={2}>
+        <Title order={2}>{title}</Title>
+        {description ? (
+          <Text c="dimmed" size="sm">
+            {description}
+          </Text>
+        ) : null}
+      </Stack>
+      {action}
+    </Group>
+  );
+}
