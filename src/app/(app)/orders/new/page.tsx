@@ -131,7 +131,7 @@ function NewOrderContent() {
 
 export default function NewOrderPage() {
   return (
-    <RequireRole roles={["ADMIN", "MANAGER", "MASTER"]}>
+    <RequireRole roles={["ADMIN", "MANAGER"]}>
       <NewOrderContent />
     </RequireRole>
   );

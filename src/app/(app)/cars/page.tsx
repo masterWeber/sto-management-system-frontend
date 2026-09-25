@@ -54,7 +54,7 @@ function CarsContent() {
   const { data, isLoading, error } = useCars({
     page,
     limit,
-    search: searchValue,
+    licensePlate: searchValue,
   });
   const clients = useClients({ limit: 100 });
   const createCar = useCreateCar();
@@ -164,7 +164,7 @@ function CarsContent() {
       <SearchInput
         value={search}
         onChange={onSearch}
-        placeholder="Поиск по марке или госномеру"
+        placeholder="Поиск по госномеру"
       />
 
       <QueryState isLoading={isLoading} error={error}>

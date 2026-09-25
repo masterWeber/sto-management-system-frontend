@@ -16,6 +16,7 @@ import { IconEye, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useCars } from "@/entities/car/queries";
 import { useClients } from "@/entities/client/queries";
 import { useDeleteOrder, useOrders } from "@/entities/order/queries";
+import { useAccess } from "@/features/auth/model/use-access";
 import { RequireRole } from "@/features/auth/ui/require-role";
 import type { Order, OrderStatus } from "@/shared/api/types";
 import { formatDateTime } from "@/shared/lib/dates";
@@ -30,7 +31,6 @@ import { ListPagination } from "@/shared/ui/list-pagination";
 import { notifyError, notifySuccess } from "@/shared/ui/notify";
 import { PageHeader } from "@/shared/ui/page-header";
 import { QueryState } from "@/shared/ui/query-state";
-import { SearchInput } from "@/shared/ui/search-input";
 
 const STATUS_OPTIONS = [
   { value: "ALL", label: "Все статусы" },
@@ -41,14 +41,14 @@ const STATUS_OPTIONS = [
 ];
 
 function OrdersContent() {
-  const { page, setPage, search, onSearch, searchValue, limit } =
-    useListParams();
+  const { page, setPage, limit } = useListParams();
+  const { hasRole } = useAccess();
+  const canManage = hasRole(["ADMIN", "MANAGER"]);
   const [status, setStatus] = useState<string>("ALL");
 
   const { data, isLoading, error } = useOrders({
     page,
     limit,
-    search: searchValue,
     status: status === "ALL" ? undefined : (status as OrderStatus),
   });
   const clients = useClients({ limit: 100 });
@@ -80,22 +80,19 @@ function OrdersContent() {
         title="Заказ-наряды"
         description="Заявки на обслуживание"
         action={
-          <Button
-            component={Link}
-            href="/orders/new"
-            leftSection={<IconPlus size={16} />}
-          >
-            Новый заказ
-          </Button>
+          canManage ? (
+            <Button
+              component={Link}
+              href="/orders/new"
+              leftSection={<IconPlus size={16} />}
+            >
+              Новый заказ
+            </Button>
+          ) : undefined
         }
       />
 
       <Group>
-        <SearchInput
-          value={search}
-          onChange={onSearch}
-          placeholder="Поиск по номеру или комментарию"
-        />
         <Select
           data={STATUS_OPTIONS}
           value={status}
@@ -146,14 +143,16 @@ function OrdersContent() {
                           >
                             <IconEye size={16} />
                           </ActionIcon>
-                          <ActionIcon
-                            variant="subtle"
-                            color="red"
-                            aria-label="Удалить"
-                            onClick={() => handleDelete(order)}
-                          >
-                            <IconTrash size={16} />
-                          </ActionIcon>
+                          {canManage ? (
+                            <ActionIcon
+                              variant="subtle"
+                              color="red"
+                              aria-label="Удалить"
+                              onClick={() => handleDelete(order)}
+                            >
+                              <IconTrash size={16} />
+                            </ActionIcon>
+                          ) : null}
                         </Group>
                       </Table.Td>
                     </Table.Tr>

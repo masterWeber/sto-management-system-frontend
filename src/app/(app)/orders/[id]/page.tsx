@@ -75,6 +75,7 @@ function OrderDetailContent() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const { hasRole } = useAccess();
+  const canManage = hasRole(["ADMIN", "MANAGER"]);
 
   const order = useOrder(id);
   const clients = useClients({ limit: 100 });
@@ -212,32 +213,38 @@ function OrderDetailContent() {
               description={formatDateTime(order.data.scheduledAt)}
               action={
                 <Group>
-                  <Button variant="default" onClick={openEdit}>
-                    Изменить
-                  </Button>
-                  <Button
-                    variant="default"
-                    leftSection={<IconDownload size={16} />}
-                    onClick={() =>
-                      download(
-                        orderApi.contractPath(id),
-                        `contract-${id.slice(0, 8)}.pdf`,
-                      )
-                    }
-                  >
-                    Договор
-                  </Button>
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    onClick={() =>
-                      download(
-                        orderApi.actPath(id),
-                        `act-${id.slice(0, 8)}.pdf`,
-                      )
-                    }
-                  >
-                    Акт
-                  </Button>
+                  {canManage ? (
+                    <Button variant="default" onClick={openEdit}>
+                      Изменить
+                    </Button>
+                  ) : null}
+                  {order.data.completedAt ? (
+                    <>
+                      <Button
+                        variant="default"
+                        leftSection={<IconDownload size={16} />}
+                        onClick={() =>
+                          download(
+                            orderApi.contractPath(id),
+                            `contract-${id.slice(0, 8)}.pdf`,
+                          )
+                        }
+                      >
+                        Договор
+                      </Button>
+                      <Button
+                        leftSection={<IconDownload size={16} />}
+                        onClick={() =>
+                          download(
+                            orderApi.actPath(id),
+                            `act-${id.slice(0, 8)}.pdf`,
+                          )
+                        }
+                      >
+                        Акт
+                      </Button>
+                    </>
+                  ) : null}
                 </Group>
               }
             />
@@ -371,23 +378,25 @@ function OrderDetailContent() {
                           {formatMoney(item.priceKopecks)}
                         </Table.Td>
                         <Table.Td>
-                          <ActionIcon
-                            variant="subtle"
-                            color="red"
-                            aria-label="Удалить позицию"
-                            onClick={() =>
-                              removeItem.mutate(
-                                { id, itemId: item.id },
-                                {
-                                  onSuccess: () =>
-                                    notifySuccess("Позиция удалена"),
-                                  onError: notifyError,
-                                },
-                              )
-                            }
-                          >
-                            <IconTrash size={16} />
-                          </ActionIcon>
+                          {canManage ? (
+                            <ActionIcon
+                              variant="subtle"
+                              color="red"
+                              aria-label="Удалить позицию"
+                              onClick={() =>
+                                removeItem.mutate(
+                                  { id, itemId: item.id },
+                                  {
+                                    onSuccess: () =>
+                                      notifySuccess("Позиция удалена"),
+                                    onError: notifyError,
+                                  },
+                                )
+                              }
+                            >
+                              <IconTrash size={16} />
+                            </ActionIcon>
+                          ) : null}
                         </Table.Td>
                       </Table.Tr>
                     ))}
